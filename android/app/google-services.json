@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "270774840441",
+    "project_id": "soil-management-app-d669d",
+    "storage_bucket": "soil-management-app-d669d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270774840441:android:13f48f5a27d37230f6f8a8",
+        "android_client_info": {
+          "package_name": "com.shackytronics.soilmanagementapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiIMSNHBOv5P1NMUSUHGLGBTAeNukPv2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
