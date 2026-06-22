@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../onboarding/onboarding_screen.dart';
+import '../../core/theme/app_gradients.dart';
+import '../../core/theme/app_typography.dart';
+import '../auth/auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,68 +12,118 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeIn;
+  late Animation<double> _slideUp;
+
   @override
   void initState() {
     super.initState();
 
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _slideUp = Tween<double>(begin: 24, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+
     Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        PageRouteBuilder(
+          pageBuilder: (context, anim, secondaryAnim) => const AuthGate(),
+          transitionsBuilder: (context, anim, secondaryAnim, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
       );
     });
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppGradients.primaryHero),
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeIn.value,
+                child: Transform.translate(
+                  offset: Offset(0, _slideUp.value),
+                  child: child,
+                ),
+              );
+            },
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: AppColors.glass20,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: AppColors.glass30,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.agriculture_rounded,
+                      color: AppColors.white,
+                      size: 64,
+                    ),
+                  ),
 
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 28),
 
-          children: [
-            Container(
-              width: 120,
-              height: 120,
+                  const Text(
+                    'AI Soil Management',
+                    style: AppTypography.onDarkDisplayMedium,
+                  ),
 
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(30),
-              ),
+                  const SizedBox(height: 10),
 
-              child: const Icon(
-                Icons.agriculture,
-                color: Colors.white,
-                size: 70,
+                  const Text(
+                    'Measure  •  Analyze  •  Manage',
+                    style: AppTypography.onDarkBodyMedium,
+                  ),
+
+                  const SizedBox(height: 72),
+
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 25),
-
-            const Text(
-              "AI Soil Management",
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            const Text(
-              "Measure • Analyze • Manage",
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 16,
-                color: Colors.grey,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
