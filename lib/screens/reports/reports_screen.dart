@@ -4,7 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
 import '../history/history_screen.dart';
-import 'report_placeholder_screen.dart';
+import 'export_screen.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -41,13 +41,13 @@ class ReportsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _ReportOptionCard(
-            icon: Icons.download_outlined,
+            icon: Icons.download_rounded,
             title: 'Export Report',
-            subtitle: 'Download a summary report of your soil data',
+            subtitle: 'Export to PDF or Excel with date & plot filters',
             color: AppColors.secondary,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => const ReportPlaceholderScreen(),
+                builder: (_) => const ExportScreen(),
               ),
             ),
           ),
@@ -69,7 +69,7 @@ class ReportsScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Full reporting requires measurement data. Complete sensor integration first.',
+                    'Sensor integration (Phase 9) will add real-time reading exports from your ESP32.',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.secondary,
                     ),

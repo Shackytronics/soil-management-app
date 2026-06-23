@@ -11,11 +11,15 @@ import '../../data/models/plot_model.dart';
 import '../../providers/measurement_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/plot_provider.dart';
+import '../../providers/sync_status_provider.dart';
 import '../measurements/add_measurement_screen.dart';
 import '../plots/add_plot_screen.dart';
 import '../plots/plot_detail_screen.dart';
 import '../sensor/sensor_screen.dart';
 import '../settings/settings_screen.dart';
+import 'widgets/monthly_measurement_chart.dart';
+import 'widgets/nutrient_comparison_chart.dart';
+import 'widgets/soil_health_trend_chart.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -50,6 +54,8 @@ class DashboardScreen extends StatelessWidget {
                       _SoilHealthCard(),
                       SizedBox(height: 16),
                       _LatestMeasurementCard(),
+                      SizedBox(height: 16),
+                      _AnalyticsSection(),
                       SizedBox(height: 16),
                       _PlotsSummaryStrip(),
                       SizedBox(height: 16),
@@ -91,11 +97,79 @@ class _DashboardAppBar extends StatelessWidget {
               ],
             ),
           ),
+          const _SyncChip(),
+          const SizedBox(width: 8),
           _GlassIcon(
             icon: Icons.notifications_outlined,
             onTap: () {},
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SyncChip extends StatelessWidget {
+  const _SyncChip();
+
+  @override
+  Widget build(BuildContext context) {
+    final sync = context.watch<SyncStatusProvider>();
+
+    final (IconData icon, Color color, String label, bool spinning) =
+        switch (sync.syncState) {
+      SyncState.syncing => (
+          Icons.sync_rounded,
+          AppColors.warning,
+          'Syncing',
+          true,
+        ),
+      SyncState.synced => (
+          Icons.cloud_done_rounded,
+          AppColors.success,
+          'Synced',
+          false,
+        ),
+      SyncState.error => (
+          Icons.cloud_off_rounded,
+          AppColors.danger,
+          'Error',
+          false,
+        ),
+      _ => sync.isOnline
+          ? (Icons.cloud_outlined, AppColors.primaryLight, 'Online', false)
+          : (Icons.cloud_off_outlined, AppColors.textHint, 'Offline', false),
+    };
+
+    return GestureDetector(
+      onTap: sync.syncState == SyncState.error ? sync.triggerSync : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.glass20,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.glass30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            spinning
+                ? SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  )
+                : Icon(icon, color: color, size: 12),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: AppTypography.onDarkCaption.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -405,7 +479,7 @@ class _ReadingMini extends StatelessWidget {
   }
 }
 
-// ─── Plots summary strip ──────────────────────────────────────────────────────
+//  Plots summary strip
 
 class _PlotsSummaryStrip extends StatelessWidget {
   const _PlotsSummaryStrip();
@@ -491,7 +565,7 @@ class _PlotStripCard extends StatelessWidget {
   }
 }
 
-// ─── Recent activity ──────────────────────────────────────────────────────────
+// Recent activity 
 
 class _RecentActivitySection extends StatelessWidget {
   const _RecentActivitySection();
@@ -579,7 +653,7 @@ class _RecentActivitySection extends StatelessWidget {
   }
 }
 
-// ─── Quick actions grid ───────────────────────────────────────────────────────
+//  Quick actions grid 
 
 class _QuickActionsGrid extends StatelessWidget {
   const _QuickActionsGrid();
@@ -720,7 +794,34 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-// ─── Shared glass primitives ──────────────────────────────────────────────────
+// ─── Analytics section ────────────────────────────────────────────────────────
+
+class _AnalyticsSection extends StatelessWidget {
+  const _AnalyticsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final count = context.select<MeasurementProvider, int>((p) => p.count);
+    if (count < 2) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 10),
+          child: Text('Analytics', style: AppTypography.onDarkHeadingSmall),
+        ),
+        const SoilHealthTrendChart(),
+        const SizedBox(height: 12),
+        const NutrientComparisonChart(),
+        const SizedBox(height: 12),
+        const MonthlyMeasurementChart(),
+      ],
+    );
+  }
+}
+
+// ─── Shared glass primitives
 
 class _GlassContainer extends StatelessWidget {
   const _GlassContainer({

@@ -71,26 +71,18 @@ class SyncService {
 
   void _markLocalSynced(SyncQueueModel entry) {
     if (entry.collection == 'measurements') {
-      final box = HiveService.measurements;
-      final m = box.values
-          .cast<dynamic>()
-          .firstWhere(
-            (m) => m.id == entry.documentId,
-            orElse: () => null,
-          );
-      if (m != null) {
+      final matches = HiveService.measurements.values
+          .where((m) => m.id == entry.documentId);
+      if (matches.isNotEmpty) {
+        final m = matches.first;
         m.isSynced = true;
         m.save();
       }
     } else if (entry.collection == 'plots') {
-      final box = HiveService.plots;
-      final p = box.values
-          .cast<dynamic>()
-          .firstWhere(
-            (p) => p.id == entry.documentId,
-            orElse: () => null,
-          );
-      if (p != null) {
+      final matches =
+          HiveService.plots.values.where((p) => p.id == entry.documentId);
+      if (matches.isNotEmpty) {
+        final p = matches.first;
         p.isSynced = true;
         p.save();
       }

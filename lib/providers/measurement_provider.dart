@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../data/models/measurement_model.dart';
 import '../data/repositories/measurement_repository.dart';
+import 'sync_status_provider.dart';
 
 class MeasurementProvider extends ChangeNotifier {
   final _repo = MeasurementRepository();
+  final SyncStatusProvider _syncStatus;
 
   List<MeasurementModel> _measurements = [];
   bool _isLoading = false;
@@ -13,7 +15,7 @@ class MeasurementProvider extends ChangeNotifier {
   DateTimeRange? _filterDateRange;
   String _searchQuery = '';
 
-  MeasurementProvider() {
+  MeasurementProvider(this._syncStatus) {
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
         _load(user.uid);
@@ -118,6 +120,86 @@ class MeasurementProvider extends ChangeNotifier {
     return total == 0 ? 0 : (score / total) * 100;
   }
 
+  // ── Chart data ───────────────────────────────────────────────────────────────
+
+  /// Per-measurement health score for the last 14 readings (oldest→newest).
+  List<({double x, double y, DateTime date})> get healthTrendPoints {
+    if (_measurements.length < 2) return [];
+    final data = _measurements.take(14).toList().reversed.toList();
+    return data.asMap().entries.map((e) {
+      return (x: e.key.toDouble(), y: _scoreForOne(e.value), date: e.value.recordedAt);
+    }).toList();
+  }
+
+  double _scoreForOne(MeasurementModel m) {
+    int score = 0;
+    void check(double v, double low, double high) {
+      if (v >= low && v <= high) {
+        score += 100;
+      } else if (v >= low * 0.8 && v <= high * 1.2) {
+        score += 60;
+      } else {
+        score += 20;
+      }
+    }
+
+    check(m.nitrogen, 10, 30);
+    check(m.phosphorus, 5, 30);
+    check(m.potassium, 100, 300);
+    check(m.ph, 6.0, 7.5);
+    check(m.moisture, 40, 70);
+    check(m.temperature, 15, 35);
+    check(m.ec, 0.2, 1.0);
+    return score / 7.0;
+  }
+
+  /// Nutrient health scores (0–100) keyed by display label.
+  Map<String, double> get nutrientScores {
+    if (_measurements.isEmpty) return {};
+    final avg = averages;
+    double score(String key, double low, double high) {
+      final v = avg[key] ?? 0;
+      if (v >= low && v <= high) return 100;
+      if (v >= low * 0.8 && v <= high * 1.2) return 60;
+      return 20;
+    }
+
+    return {
+      'N': score('nitrogen', 10, 30),
+      'P': score('phosphorus', 5, 30),
+      'K': score('potassium', 100, 300),
+      'pH': score('ph', 6.0, 7.5),
+      'H₂O': score('moisture', 40, 70),
+      'Temp': score('temperature', 15, 35),
+      'EC': score('ec', 0.2, 1.0),
+    };
+  }
+
+  /// Measurement counts for the last 6 calendar months.
+  Map<String, int> get monthlyCountData {
+    final result = <String, int>{};
+    final now = DateTime.now();
+    for (var i = 5; i >= 0; i--) {
+      final month = DateTime(now.year, now.month - i, 1);
+      result[_monthKey(month)] = 0;
+    }
+    for (final m in _measurements) {
+      final key = _monthKey(m.recordedAt);
+      if (result.containsKey(key)) result[key] = result[key]! + 1;
+    }
+    return result;
+  }
+
+  String _monthKey(DateTime dt) {
+    const names = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${names[dt.month - 1]} ${dt.year.toString().substring(2)}';
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
   void setFilterPlot(String? plotId) {
     _filterPlotId = plotId;
     notifyListeners();
@@ -181,6 +263,7 @@ class MeasurementProvider extends ChangeNotifier {
     );
     _measurements = _repo.getAllMeasurements(userId);
     notifyListeners();
+    _syncStatus.onDataWritten();
     return m;
   }
 
@@ -189,11 +272,13 @@ class MeasurementProvider extends ChangeNotifier {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     _measurements = _repo.getAllMeasurements(userId);
     notifyListeners();
+    _syncStatus.onDataWritten();
   }
 
   Future<void> deleteMeasurement(String id) async {
     await _repo.deleteMeasurement(id);
     _measurements.removeWhere((m) => m.id == id);
     notifyListeners();
+    _syncStatus.onDataWritten();
   }
 }

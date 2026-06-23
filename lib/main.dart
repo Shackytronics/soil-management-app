@@ -7,18 +7,33 @@ import 'data/local/hive_service.dart';
 import 'providers/measurement_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/plot_provider.dart';
+import 'providers/settings_provider.dart';
+import 'providers/sync_status_provider.dart';
 import 'screens/splash/splash_screen.dart';
-import 'services/sync/sync_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await HiveService.init();
-  runApp(const SoilManagementApp());
+
+  final settings = SettingsProvider();
+  await settings.init();
+
+  final syncStatus = SyncStatusProvider();
+  await syncStatus.init();
+
+  runApp(SoilManagementApp(settings: settings, syncStatus: syncStatus));
 }
 
 class SoilManagementApp extends StatefulWidget {
-  const SoilManagementApp({super.key});
+  const SoilManagementApp({
+    super.key,
+    required this.settings,
+    required this.syncStatus,
+  });
+
+  final SettingsProvider settings;
+  final SyncStatusProvider syncStatus;
 
   @override
   State<SoilManagementApp> createState() => _SoilManagementAppState();
@@ -41,7 +56,7 @@ class _SoilManagementAppState extends State<SoilManagementApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      SyncService.instance.syncPending();
+      widget.syncStatus.triggerSync();
     }
   }
 
@@ -49,15 +64,29 @@ class _SoilManagementAppState extends State<SoilManagementApp>
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: widget.settings),
+        ChangeNotifierProvider.value(value: widget.syncStatus),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
-        ChangeNotifierProvider(create: (_) => PlotProvider()),
-        ChangeNotifierProvider(create: (_) => MeasurementProvider()),
+        ChangeNotifierProvider(
+          create: (ctx) => PlotProvider(
+            ctx.read<SyncStatusProvider>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => MeasurementProvider(
+            ctx.read<SyncStatusProvider>(),
+          ),
+        ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'AI Soil Management',
-        theme: AppTheme.lightTheme,
-        home: const SplashScreen(),
+      child: Consumer<SettingsProvider>(
+        builder: (_, settings, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'AI Soil Management',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: settings.themeMode,
+          home: const SplashScreen(),
+        ),
       ),
     );
   }

@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 
 import '../data/models/plot_model.dart';
 import '../data/repositories/plot_repository.dart';
+import 'sync_status_provider.dart';
 
 class PlotProvider extends ChangeNotifier {
   final _repo = PlotRepository();
+  final SyncStatusProvider _syncStatus;
 
   List<PlotModel> _plots = [];
   bool _isLoading = false;
   String _searchQuery = '';
 
-  PlotProvider() {
+  PlotProvider(this._syncStatus) {
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
         _load(user.uid);
@@ -82,6 +84,7 @@ class PlotProvider extends ChangeNotifier {
     );
     _plots = _repo.getAllPlots(userId);
     notifyListeners();
+    _syncStatus.onDataWritten();
     return plot;
   }
 
@@ -90,11 +93,13 @@ class PlotProvider extends ChangeNotifier {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     _plots = _repo.getAllPlots(userId);
     notifyListeners();
+    _syncStatus.onDataWritten();
   }
 
   Future<void> deletePlot(String plotId) async {
     await _repo.deletePlot(plotId);
     _plots.removeWhere((p) => p.id == plotId);
     notifyListeners();
+    _syncStatus.onDataWritten();
   }
 }
