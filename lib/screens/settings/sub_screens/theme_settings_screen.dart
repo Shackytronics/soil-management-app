@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/l10n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_typography.dart';
@@ -12,10 +13,11 @@ class ThemeSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appearance'),
+        title: Text(l10n.themeAppearance),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -29,30 +31,30 @@ class ThemeSettingsScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
           Text(
-            'THEME',
+            l10n.settingsTheme.toUpperCase(),
             style: AppTypography.overline,
           ),
           const SizedBox(height: 12),
           _ThemeOption(
             icon: Icons.light_mode_rounded,
-            title: 'Light',
-            subtitle: 'Always use light theme',
+            title: l10n.settingsThemeLight,
+            subtitle: l10n.themeLightDesc,
             value: ThemeMode.light,
             groupValue: settings.themeMode,
             onChanged: settings.setThemeMode,
           ),
           _ThemeOption(
             icon: Icons.dark_mode_rounded,
-            title: 'Dark',
-            subtitle: 'Always use dark theme',
+            title: l10n.settingsThemeDark,
+            subtitle: l10n.themeDarkDesc,
             value: ThemeMode.dark,
             groupValue: settings.themeMode,
             onChanged: settings.setThemeMode,
           ),
           _ThemeOption(
             icon: Icons.brightness_auto_rounded,
-            title: 'System Default',
-            subtitle: 'Follow device theme setting',
+            title: l10n.themeSystemTitle,
+            subtitle: l10n.themeSystemDesc,
             value: ThemeMode.system,
             groupValue: settings.themeMode,
             onChanged: settings.setThemeMode,
@@ -73,7 +75,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'The dashboard and auth screens always use the green gradient regardless of theme.',
+                    l10n.themeNote,
                     style: AppTypography.bodySmall
                         .copyWith(color: AppColors.info),
                   ),

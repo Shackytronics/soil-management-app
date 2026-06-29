@@ -86,6 +86,14 @@ class SyncService {
         p.isSynced = true;
         p.save();
       }
+    } else if (entry.collection == 'recommendations') {
+      final matches = HiveService.recommendations.values
+          .where((r) => r.id == entry.documentId);
+      if (matches.isNotEmpty) {
+        final r = matches.first;
+        r.isSynced = true;
+        r.save();
+      }
     }
   }
 

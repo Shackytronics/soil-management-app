@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../data/models/measurement_model.dart';
 import '../data/repositories/measurement_repository.dart';
+import 'recommendation_provider.dart';
 import 'sync_status_provider.dart';
 
 class MeasurementProvider extends ChangeNotifier {
   final _repo = MeasurementRepository();
   final SyncStatusProvider _syncStatus;
+  final RecommendationProvider _recommendations;
 
   List<MeasurementModel> _measurements = [];
   bool _isLoading = false;
@@ -15,7 +19,11 @@ class MeasurementProvider extends ChangeNotifier {
   DateTimeRange? _filterDateRange;
   String _searchQuery = '';
 
-  MeasurementProvider(this._syncStatus) {
+  bool _wasOnline = false;
+
+  MeasurementProvider(this._syncStatus, this._recommendations) {
+    _wasOnline = _syncStatus.isOnline;
+    _syncStatus.addListener(_onSyncStatusChanged);
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
         _load(user.uid);
@@ -24,6 +32,22 @@ class MeasurementProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  /// On the offline -> online transition, backfill advisories for any
+  /// measurements saved while offline.
+  void _onSyncStatusChanged() {
+    final online = _syncStatus.isOnline;
+    if (online && !_wasOnline && _measurements.isNotEmpty) {
+      unawaited(_recommendations.generateMissingFor(_measurements));
+    }
+    _wasOnline = online;
+  }
+
+  @override
+  void dispose() {
+    _syncStatus.removeListener(_onSyncStatusChanged);
+    super.dispose();
   }
 
   List<MeasurementModel> get measurements => _measurements;
@@ -228,6 +252,11 @@ class MeasurementProvider extends ChangeNotifier {
     _measurements = _repo.getAllMeasurements(userId);
     _isLoading = false;
     notifyListeners();
+    // Backfill any advisories missing for already-saved measurements
+    // (e.g. saved on a previous offline session). No-ops when offline.
+    if (_measurements.isNotEmpty) {
+      unawaited(_recommendations.generateMissingFor(_measurements));
+    }
   }
 
   void refresh() {
@@ -264,6 +293,11 @@ class MeasurementProvider extends ChangeNotifier {
     _measurements = _repo.getAllMeasurements(userId);
     notifyListeners();
     _syncStatus.onDataWritten();
+
+    // Request a rule-based soil-management advisory from Django. Fire-and-forget
+    // so saving the measurement is never blocked by network latency; the
+    // RecommendationProvider manages its own loading/error state.
+    unawaited(_recommendations.generateForMeasurement(m));
     return m;
   }
 
@@ -279,6 +313,8 @@ class MeasurementProvider extends ChangeNotifier {
     await _repo.deleteMeasurement(id);
     _measurements.removeWhere((m) => m.id == id);
     notifyListeners();
+    // Cascade: remove any advisory generated for this measurement.
+    await _recommendations.deleteForMeasurement(id);
     _syncStatus.onDataWritten();
   }
 }

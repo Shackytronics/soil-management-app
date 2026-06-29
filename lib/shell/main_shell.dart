@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/l10n/l10n_extension.dart';
 import '../providers/navigation_provider.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/measurements/measurements_screen.dart';
@@ -54,31 +55,31 @@ class MainShell extends StatelessWidget {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: nav.currentIndex,
           onTap: nav.switchTab,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home_rounded),
-              label: 'Dashboard',
+              icon: const Icon(Icons.home_outlined),
+              activeIcon: const Icon(Icons.home_rounded),
+              label: context.l10n.navDashboard,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.grass_outlined),
-              activeIcon: Icon(Icons.grass),
-              label: 'Plots',
+              icon: const Icon(Icons.grass_outlined),
+              activeIcon: const Icon(Icons.grass),
+              label: context.l10n.navPlots,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.science_outlined),
-              activeIcon: Icon(Icons.science),
-              label: 'Measurements',
+              icon: const Icon(Icons.science_outlined),
+              activeIcon: const Icon(Icons.science),
+              label: context.l10n.navMeasurements,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart),
-              label: 'Reports',
+              icon: const Icon(Icons.bar_chart_outlined),
+              activeIcon: const Icon(Icons.bar_chart),
+              label: context.l10n.navReports,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
+              icon: const Icon(Icons.person_outline),
+              activeIcon: const Icon(Icons.person_rounded),
+              label: context.l10n.navProfile,
             ),
           ],
         ),

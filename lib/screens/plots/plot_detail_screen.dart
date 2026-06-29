@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -22,8 +23,8 @@ class PlotDetailScreen extends StatelessWidget {
 
     if (plot == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Plot')),
-        body: const Center(child: Text('Plot not found')),
+        appBar: AppBar(title: Text(context.l10n.plotDetails)),
+        body: Center(child: Text(context.l10n.plotNotFound)),
       );
     }
 
@@ -65,9 +66,10 @@ class PlotDetailScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         icon: const Icon(Icons.add_chart_rounded),
-        label: const Text(
-          'Add Reading',
-          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        label: Text(
+          context.l10n.measAddReading,
+          style: const TextStyle(
+              fontFamily: 'Poppins', fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -147,7 +149,7 @@ class _PlotSliverAppBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${plot.sizeAcres} acres',
+                          context.l10n.plotAcresText('${plot.sizeAcres}'),
                           style: AppTypography.onDarkCaption,
                         ),
                       ),
@@ -165,18 +167,17 @@ class _PlotSliverAppBar extends StatelessWidget {
     showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Plot'),
-        content: Text(
-            'Delete "${plot.name}"? All measurements for this plot will remain.'),
+        title: Text(context.l10n.plotDeleteTitle),
+        content: Text(context.l10n.plotDeleteNamedConfirm(plot.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.actionCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Delete'),
+            child: Text(context.l10n.actionDelete),
           ),
         ],
       ),
@@ -205,7 +206,7 @@ class _PlotInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Plot Details', style: AppTypography.labelMedium),
+          Text(context.l10n.plotDetails, style: AppTypography.labelMedium),
           const SizedBox(height: 12),
           if (plot.location.isNotEmpty)
             _InfoRow(
@@ -215,14 +216,13 @@ class _PlotInfoCard extends StatelessWidget {
           if (plot.sizeAcres > 0)
             _InfoRow(
                 icon: Icons.straighten_outlined,
-                label: '${plot.sizeAcres} acres'),
+                label: context.l10n.plotAcresText('${plot.sizeAcres}')),
           if (plot.description.isNotEmpty)
             _InfoRow(
                 icon: Icons.notes_outlined, label: plot.description),
           _InfoRow(
             icon: Icons.calendar_today_outlined,
-            label:
-                'Added ${_formatDate(plot.createdAt)}',
+            label: context.l10n.plotAddedDate(_formatDate(plot.createdAt)),
           ),
         ],
       ),
@@ -280,13 +280,17 @@ class _MeasurementsSummary extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-              child: _SumChip('Readings', '$count', Icons.science_rounded)),
+              child: _SumChip(context.l10n.measReadingsLabel, '$count',
+                  Icons.science_rounded)),
           Expanded(
-              child: _SumChip('Avg pH', avgPh.toStringAsFixed(1), Icons.water_drop_outlined)),
+              child: _SumChip(context.l10n.measStatAvgPh,
+                  avgPh.toStringAsFixed(1), Icons.water_drop_outlined)),
           Expanded(
-              child: _SumChip('Avg H₂O', '${avgMoisture.toStringAsFixed(0)}%', Icons.opacity_outlined)),
+              child: _SumChip(context.l10n.measStatAvgMoisture,
+                  '${avgMoisture.toStringAsFixed(0)}%', Icons.opacity_outlined)),
           Expanded(
-              child: _SumChip('Avg N', avgN.toStringAsFixed(0), Icons.eco_outlined)),
+              child: _SumChip(context.l10n.measStatAvgN,
+                  avgN.toStringAsFixed(0), Icons.eco_outlined)),
         ],
       ),
     );
@@ -327,7 +331,8 @@ class _MeasurementsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Measurement History', style: AppTypography.headingSmall),
+        Text(context.l10n.reportsHistoryTitle,
+            style: AppTypography.headingSmall),
         const SizedBox(height: 10),
         if (measurements.isEmpty)
           Container(
@@ -343,7 +348,7 @@ class _MeasurementsList extends StatelessWidget {
                   const Icon(Icons.science_outlined,
                       size: 40, color: AppColors.textHint),
                   const SizedBox(height: 10),
-                  Text('No readings yet',
+                  Text(context.l10n.plotNoReadingsYet,
                       style: AppTypography.bodyMedium
                           .copyWith(color: AppColors.textSecondary)),
                 ],

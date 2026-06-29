@@ -4,19 +4,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/plot_model.dart';
+import '../../data/models/recommendation_model.dart';
 import '../../providers/measurement_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/plot_provider.dart';
+import '../../providers/recommendation_provider.dart';
 import '../../providers/sync_status_provider.dart';
 import '../measurements/add_measurement_screen.dart';
 import '../plots/add_plot_screen.dart';
 import '../plots/plot_detail_screen.dart';
 import '../sensor/sensor_screen.dart';
 import '../settings/settings_screen.dart';
+import '../soil_management/soil_management_screen.dart';
 import 'widgets/monthly_measurement_chart.dart';
 import 'widgets/nutrient_comparison_chart.dart';
 import 'widgets/soil_health_trend_chart.dart';
@@ -27,13 +31,17 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final l10n = context.l10n;
     final firstName = (user?.displayName?.split(' ').first ??
             user?.email?.split('@').first ??
-            'Farmer')
+            l10n.dashFarmer)
         .toString();
     final hour = DateTime.now().hour;
-    final greeting =
-        hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    final greeting = hour < 12
+        ? l10n.dashGoodMorning
+        : hour < 17
+            ? l10n.dashGoodAfternoon
+            : l10n.dashGoodEvening;
 
     return Scaffold(
       body: Container(
@@ -55,6 +63,7 @@ class DashboardScreen extends StatelessWidget {
                       SizedBox(height: 16),
                       _LatestMeasurementCard(),
                       SizedBox(height: 16),
+                      _LatestAdvisoryCard(),
                       _AnalyticsSection(),
                       SizedBox(height: 16),
                       _PlotsSummaryStrip(),
@@ -116,29 +125,30 @@ class _SyncChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final sync = context.watch<SyncStatusProvider>();
 
+    final l10n = context.l10n;
     final (IconData icon, Color color, String label, bool spinning) =
         switch (sync.syncState) {
       SyncState.syncing => (
           Icons.sync_rounded,
           AppColors.warning,
-          'Syncing',
+          l10n.syncSyncing,
           true,
         ),
       SyncState.synced => (
           Icons.cloud_done_rounded,
           AppColors.success,
-          'Synced',
+          l10n.syncSynced,
           false,
         ),
       SyncState.error => (
           Icons.cloud_off_rounded,
           AppColors.danger,
-          'Error',
+          l10n.syncError,
           false,
         ),
       _ => sync.isOnline
-          ? (Icons.cloud_outlined, AppColors.primaryLight, 'Online', false)
-          : (Icons.cloud_off_outlined, AppColors.textHint, 'Offline', false),
+          ? (Icons.cloud_outlined, AppColors.primaryLight, l10n.syncOnline, false)
+          : (Icons.cloud_off_outlined, AppColors.textHint, l10n.syncOffline, false),
     };
 
     return GestureDetector(
@@ -185,13 +195,14 @@ class _QuickStatsRow extends StatelessWidget {
     final plots = context.watch<PlotProvider>();
     final meas = context.watch<MeasurementProvider>();
     final score = meas.healthScore;
+    final l10n = context.l10n;
 
     return Row(
       children: [
         Expanded(
           child: _StatChip(
             icon: Icons.grass_rounded,
-            label: 'Plots',
+            label: l10n.dashStatPlots,
             value: '${plots.count}',
           ),
         ),
@@ -199,7 +210,7 @@ class _QuickStatsRow extends StatelessWidget {
         Expanded(
           child: _StatChip(
             icon: Icons.science_rounded,
-            label: 'Readings',
+            label: l10n.dashStatReadings,
             value: '${meas.count}',
           ),
         ),
@@ -207,7 +218,7 @@ class _QuickStatsRow extends StatelessWidget {
         Expanded(
           child: _StatChip(
             icon: Icons.favorite_rounded,
-            label: 'Health',
+            label: l10n.dashStatHealth,
             value: meas.count == 0 ? '--' : '${score.round()}%',
           ),
         ),
@@ -252,6 +263,7 @@ class _SoilHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meas = context.watch<MeasurementProvider>();
+    final l10n = context.l10n;
 
     if (meas.count == 0) {
       return _GlassContainer(
@@ -273,10 +285,11 @@ class _SoilHealthCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Soil Health', style: AppTypography.onDarkLabelLarge),
+                  Text(l10n.dashSoilHealth,
+                      style: AppTypography.onDarkLabelLarge),
                   const SizedBox(height: 4),
                   Text(
-                    'Add your first measurement to see soil health analysis.',
+                    l10n.dashSoilHealthEmpty,
                     style: AppTypography.onDarkCaption,
                   ),
                 ],
@@ -290,10 +303,10 @@ class _SoilHealthCard extends StatelessWidget {
     final avg = meas.averages;
     final score = meas.healthScore;
     final label = score >= 70
-        ? 'Good'
+        ? l10n.dashHealthGood
         : score >= 40
-            ? 'Fair'
-            : 'Poor';
+            ? l10n.dashHealthFair
+            : l10n.dashHealthPoor;
     final color = score >= 70
         ? AppColors.success
         : score >= 40
@@ -307,7 +320,7 @@ class _SoilHealthCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Soil Health', style: AppTypography.onDarkLabelLarge),
+              Text(l10n.dashSoilHealth, style: AppTypography.onDarkLabelLarge),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -398,7 +411,8 @@ class _LatestMeasurementCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Latest Reading', style: AppTypography.onDarkLabelLarge),
+              Text(context.l10n.dashLatestReading,
+                  style: AppTypography.onDarkLabelLarge),
               const Spacer(),
               Text(
                 _formatDate(latest.recordedAt),
@@ -479,6 +493,96 @@ class _ReadingMini extends StatelessWidget {
   }
 }
 
+// ─── Latest advisory card ─────────────────────────────────────────────────────
+
+class _LatestAdvisoryCard extends StatelessWidget {
+  const _LatestAdvisoryCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final RecommendationModel? advisory =
+        context.watch<RecommendationProvider>().latest;
+    if (advisory == null) return const SizedBox.shrink();
+
+    final count = advisory.recommendations.length;
+    final top = advisory.recommendations.isNotEmpty
+        ? advisory.recommendations.first
+        : null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                SoilManagementScreen(measurementId: advisory.measurementId),
+          ),
+        ),
+        child: _GlassContainer(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.spa_rounded,
+                      color: AppColors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(context.l10n.dashSoilAdvisory,
+                      style: AppTypography.onDarkLabelLarge),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.glass20,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.glass30),
+                    ),
+                    child: Text(
+                      '${advisory.soilHealth} · ${context.l10n.smScoreOutOf('${advisory.soilHealthScore}')}',
+                      style: AppTypography.onDarkCaption,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                advisory.plotName,
+                style: AppTypography.onDarkBodyMedium,
+              ),
+              if (top != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  '${top.category}: ${top.title}',
+                  style: AppTypography.onDarkLabelLarge.copyWith(fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    context.l10n.smRecommendationCount(count),
+                    style: AppTypography.onDarkCaption,
+                  ),
+                  const Spacer(),
+                  Text(context.l10n.actionViewAll,
+                      style: AppTypography.onDarkCaption
+                          .copyWith(color: AppColors.white)),
+                  const Icon(Icons.chevron_right,
+                      color: AppColors.white, size: 16),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 //  Plots summary strip
 
 class _PlotsSummaryStrip extends StatelessWidget {
@@ -497,7 +601,8 @@ class _PlotsSummaryStrip extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 10),
-          child: Text('My Plots', style: AppTypography.onDarkHeadingSmall),
+          child: Text(context.l10n.dashMyPlots,
+              style: AppTypography.onDarkHeadingSmall),
         ),
         SizedBox(
           height: 90,
@@ -555,7 +660,7 @@ class _PlotStripCard extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              '$measurementCount readings',
+              context.l10n.plotMeasurementsCount(measurementCount),
               style: AppTypography.onDarkCaption,
             ),
           ],
@@ -580,7 +685,8 @@ class _RecentActivitySection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 10),
-          child: Text('Recent Activity', style: AppTypography.onDarkHeadingSmall),
+          child: Text(context.l10n.dashRecentActivity,
+              style: AppTypography.onDarkHeadingSmall),
         ),
         _GlassContainer(
           padding: EdgeInsets.zero,
@@ -662,45 +768,70 @@ class _QuickActionsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final nav = context.read<NavigationProvider>();
 
+    final l10n = context.l10n;
+    final advisoryMeasurementId =
+        context.read<RecommendationProvider>().latest?.measurementId ??
+            context.read<MeasurementProvider>().latest?.id;
+
     final actions = [
       _ActionData(
         icon: Icons.add_location_alt_rounded,
-        title: 'Add Plot',
-        subtitle: 'Register new land',
+        title: l10n.actionAddPlot,
+        subtitle: l10n.dashRegisterLand,
         onTap: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => const AddPlotScreen())),
       ),
       _ActionData(
         icon: Icons.add_chart_rounded,
-        title: 'Add\nMeasurement',
-        subtitle: 'Manual entry',
+        title: l10n.actionAddMeasurement,
+        subtitle: l10n.dashManualEntry,
         onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AddMeasurementScreen())),
       ),
       _ActionData(
         icon: Icons.bluetooth_rounded,
-        title: 'Connect\nSensor',
-        subtitle: 'Bluetooth pairing',
+        title: l10n.dashConnectSensor,
+        subtitle: l10n.dashBluetoothPairing,
         onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => const SensorScreen(mode: SensorMode.connect))),
       ),
       _ActionData(
         icon: Icons.sensors_rounded,
-        title: 'Live\nReading',
-        subtitle: 'Start sensor',
+        title: l10n.dashLiveReading,
+        subtitle: l10n.dashStartSensor,
         onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => const SensorScreen(mode: SensorMode.measure))),
       ),
       _ActionData(
+        icon: Icons.spa_rounded,
+        title: l10n.dashSoilAdvisoryAction,
+        subtitle: l10n.dashRuleBasedAdvice,
+        onTap: () {
+          if (advisoryMeasurementId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.dashNeedMeasurement)),
+            );
+            return;
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SoilManagementScreen(
+                measurementId: advisoryMeasurementId,
+              ),
+            ),
+          );
+        },
+      ),
+      _ActionData(
         icon: Icons.bar_chart_rounded,
-        title: 'Reports',
-        subtitle: 'View analytics',
+        title: l10n.navReports,
+        subtitle: l10n.dashViewAnalytics,
         onTap: () => nav.switchTab(3),
       ),
       _ActionData(
         icon: Icons.settings_rounded,
-        title: 'Settings',
-        subtitle: 'App preferences',
+        title: l10n.dashSettings,
+        subtitle: l10n.dashAppPreferences,
         onTap: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
       ),
@@ -711,7 +842,8 @@ class _QuickActionsGrid extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 10),
-          child: Text('Quick Actions', style: AppTypography.onDarkHeadingSmall),
+          child: Text(l10n.dashQuickActions,
+              style: AppTypography.onDarkHeadingSmall),
         ),
         GridView.builder(
           shrinkWrap: true,
@@ -809,7 +941,8 @@ class _AnalyticsSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 10),
-          child: Text('Analytics', style: AppTypography.onDarkHeadingSmall),
+          child: Text(context.l10n.dashAnalytics,
+              style: AppTypography.onDarkHeadingSmall),
         ),
         const SoilHealthTrendChart(),
         const SizedBox(height: 12),

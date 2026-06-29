@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showSnack('Please fill all fields');
+      _showSnack(context.l10n.authFillAllFields);
       return;
     }
 
@@ -45,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authService.loginUser(email: email, password: password);
       // AuthGate listens to authStateChanges and routes to MainShell automatically.
     } on FirebaseAuthException catch (e) {
-      if (mounted) _showSnack(e.message ?? 'Login failed');
+      if (mounted) _showSnack(e.message ?? context.l10n.authLoginFailed);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -94,14 +95,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
 
               Text(
-                'Welcome Back',
+                context.l10n.authWelcomeBack,
                 style: AppTypography.headingLarge,
               ),
 
               const SizedBox(height: 6),
 
               Text(
-                'Sign in to continue managing your soil',
+                context.l10n.authLoginSubtitle,
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -114,9 +115,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined),
+                decoration: InputDecoration(
+                  labelText: context.l10n.authEmailAddress,
+                  prefixIcon: const Icon(Icons.email_outlined),
                 ),
               ),
 
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _login(),
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: context.l10n.authPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -154,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       builder: (_) => const ForgotPasswordScreen(),
                     ),
                   ),
-                  child: const Text('Forgot Password?'),
+                  child: Text(context.l10n.authForgotPassword),
                 ),
               ),
 
@@ -175,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: AppColors.white,
                           ),
                         )
-                      : const Text('Login'),
+                      : Text(context.l10n.authLoginButton),
                 ),
               ),
 
@@ -186,14 +187,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Don't have an account?",
+                    context.l10n.authNoAccount,
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   TextButton(
                     onPressed: _goToRegister,
-                    child: const Text('Create Account'),
+                    child: Text(context.l10n.authCreateAccount),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -38,7 +39,7 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      _snack('Plot name is required');
+      _snack(context.l10n.plotNameRequiredMsg);
       return;
     }
 
@@ -57,7 +58,7 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
           );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _snack('Failed to save plot: $e');
+      if (mounted) _snack('${context.l10n.plotSaveFailed}: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -71,7 +72,7 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Add New Plot'),
+        title: Text(context.l10n.plotAddNewTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -86,16 +87,16 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
           children: [
             const SizedBox(height: 8),
             _Section(
-              title: 'Plot Information',
+              title: context.l10n.plotInfoSection,
               children: [
                 TextField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Plot Name *',
-                    hintText: 'e.g. North Field, Plot A',
-                    prefixIcon: Icon(Icons.grass_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotNameRequiredLabel,
+                    hintText: context.l10n.plotNameHint,
+                    prefixIcon: const Icon(Icons.grass_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -103,10 +104,10 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                   controller: _locationController,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Location / Village',
-                    hintText: 'e.g. Dodoma, Arusha',
-                    prefixIcon: Icon(Icons.location_on_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotLocationVillage,
+                    hintText: context.l10n.plotLocationHint,
+                    prefixIcon: const Icon(Icons.location_on_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -114,10 +115,10 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                   controller: _areaController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Area (acres)',
-                    hintText: 'e.g. 2.5',
-                    prefixIcon: Icon(Icons.straighten_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotAreaAcres,
+                    hintText: context.l10n.plotAreaHint,
+                    prefixIcon: const Icon(Icons.straighten_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -126,23 +127,23 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                   textCapitalization: TextCapitalization.sentences,
                   maxLines: 2,
                   textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    hintText: 'Any notes about this plot...',
-                    prefixIcon: Icon(Icons.notes_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotDescOptional,
+                    hintText: context.l10n.plotDescHint,
+                    prefixIcon: const Icon(Icons.notes_outlined),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
             _Section(
-              title: 'Primary Crop',
+              title: context.l10n.plotPrimaryCrop,
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCrop,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.eco_outlined),
-                    labelText: 'Crop Type',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.eco_outlined),
+                    labelText: context.l10n.plotCropType,
                   ),
                   items: _crops
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -166,7 +167,8 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                             strokeWidth: 2.5, color: AppColors.white),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(_isSaving ? 'Saving...' : 'Save Plot'),
+                label: Text(
+                    _isSaving ? context.l10n.actionSaving : context.l10n.plotSave),
               ),
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -37,12 +38,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = _passwordController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      _showSnack('Please fill all fields');
+      _showSnack(context.l10n.authFillAllFields);
       return;
     }
 
     if (password.length < 6) {
-      _showSnack('Password must be at least 6 characters');
+      _showSnack(context.l10n.valPasswordShort);
       return;
     }
 
@@ -60,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Firebase automatically signs in the user after createUserWithEmailAndPassword.
       // AuthGate detects authStateChanges and routes to MainShell. No manual navigation.
     } on FirebaseAuthException catch (e) {
-      if (mounted) _showSnack(e.message ?? 'Registration failed');
+      if (mounted) _showSnack(e.message ?? context.l10n.authRegisterFailed);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -108,12 +109,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 32),
 
-              Text('Create Account', style: AppTypography.headingLarge),
+              Text(context.l10n.authCreateAccount,
+                  style: AppTypography.headingLarge),
 
               const SizedBox(height: 6),
 
               Text(
-                'Register to start managing your soil health',
+                context.l10n.authRegisterSubtitle,
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -126,9 +128,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _fullNameController,
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: context.l10n.authFullName,
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
               ),
 
@@ -139,9 +141,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined),
+                decoration: InputDecoration(
+                  labelText: context.l10n.authEmailAddress,
+                  prefixIcon: const Icon(Icons.email_outlined),
                 ),
               ),
 
@@ -154,8 +156,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _register(),
                 decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Minimum 6 characters',
+                  labelText: context.l10n.authPassword,
+                  hintText: context.l10n.authPasswordMin,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -186,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: AppColors.white,
                           ),
                         )
-                      : const Text('Create Account'),
+                      : Text(context.l10n.authCreateAccount),
                 ),
               ),
 
@@ -197,14 +199,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Already have an account?',
+                    context.l10n.authHaveAccount,
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   TextButton(
                     onPressed: _goToLogin,
-                    child: const Text('Login'),
+                    child: Text(context.l10n.authLoginButton),
                   ),
                 ],
               ),

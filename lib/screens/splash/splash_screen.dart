@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -96,15 +97,15 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 28),
 
-                  const Text(
-                    'AI Soil Management',
+                  Text(
+                    context.l10n.appName,
                     style: AppTypography.onDarkDisplayMedium,
                   ),
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                    'Measure  •  Analyze  •  Manage',
+                  Text(
+                    context.l10n.splashTagline,
                     style: AppTypography.onDarkBodyMedium,
                   ),
 

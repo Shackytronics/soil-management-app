@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
+import '../../providers/measurement_provider.dart';
+import '../../providers/recommendation_provider.dart';
 import '../history/history_screen.dart';
+import '../soil_management/soil_management_screen.dart';
 import 'export_screen.dart';
 
 class ReportsScreen extends StatelessWidget {
@@ -11,10 +16,16 @@ class ReportsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final latestAdvisory = context.watch<RecommendationProvider>().latest;
+    final advisorySubtitle = latestAdvisory == null
+        ? context.l10n.reportsAdvisorySubtitle
+        : '${latestAdvisory.soilHealth} · '
+            '${context.l10n.smScoreOutOf('${latestAdvisory.soilHealthScore}')}';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Reports'),
+        title: Text(context.l10n.reportsTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         flexibleSpace: Container(
@@ -26,14 +37,39 @@ class ReportsScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
           Text(
-            'AVAILABLE REPORTS',
+            context.l10n.reportsAvailable,
             style: AppTypography.overline,
           ),
           const SizedBox(height: 12),
           _ReportOptionCard(
+            icon: Icons.spa_rounded,
+            title: context.l10n.reportsAdvisoryTitle,
+            subtitle: advisorySubtitle,
+            color: AppColors.primary,
+            onTap: () {
+              final id = context.read<RecommendationProvider>().latest
+                      ?.measurementId ??
+                  context.read<MeasurementProvider>().latest?.id;
+              if (id == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(context.l10n.reportsNeedMeasurement),
+                  ),
+                );
+                return;
+              }
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SoilManagementScreen(measurementId: id),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          _ReportOptionCard(
             icon: Icons.history_rounded,
-            title: 'Measurement History',
-            subtitle: 'Browse all past soil readings across your plots',
+            title: context.l10n.reportsHistoryTitle,
+            subtitle: context.l10n.reportsHistorySubtitle,
             color: AppColors.info,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const HistoryScreen()),
@@ -42,8 +78,8 @@ class ReportsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _ReportOptionCard(
             icon: Icons.download_rounded,
-            title: 'Export Report',
-            subtitle: 'Export to PDF or Excel with date & plot filters',
+            title: context.l10n.reportsExportTitle,
+            subtitle: context.l10n.reportsExportSubtitle,
             color: AppColors.secondary,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -69,7 +105,7 @@ class ReportsScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Sensor integration (Phase 9) will add real-time reading exports from your ESP32.',
+                    context.l10n.reportsSensorNote,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.secondary,
                     ),

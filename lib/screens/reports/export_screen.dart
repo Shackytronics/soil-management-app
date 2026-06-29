@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/measurement_model.dart';
 import '../../core/theme/app_gradients.dart';
@@ -38,7 +39,7 @@ class _ExportScreenState extends State<ExportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Export Report'),
+        title: Text(context.l10n.exportTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -51,12 +52,12 @@ class _ExportScreenState extends State<ExportScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // ── Filters ─────────────────────────────────────────────────────────
-          _SectionLabel('FILTERS'),
+          _SectionLabel(context.l10n.exportFiltersLabel),
           const SizedBox(height: 10),
           _FilterCard(
-            label: 'Date Range',
+            label: context.l10n.exportFilterDate,
             value: _dateRange == null
-                ? 'All time'
+                ? context.l10n.exportAllTime
                 : '${_formatDate(_dateRange!.start)} – ${_formatDate(_dateRange!.end)}',
             icon: Icons.date_range_rounded,
             onTap: _pickDateRange,
@@ -64,9 +65,9 @@ class _ExportScreenState extends State<ExportScreen> {
           ),
           const SizedBox(height: 10),
           _FilterCard(
-            label: 'Plot',
+            label: context.l10n.measFieldPlot,
             value: _selectedPlotId == null
-                ? 'All plots'
+                ? context.l10n.exportAllPlots
                 : plots.firstWhere((p) => p.id == _selectedPlotId).name,
             icon: Icons.grass_rounded,
             onTap: plots.isEmpty ? null : _pickPlot,
@@ -77,7 +78,7 @@ class _ExportScreenState extends State<ExportScreen> {
           const SizedBox(height: 24),
 
           // ── Format ──────────────────────────────────────────────────────────
-          _SectionLabel('FORMAT'),
+          _SectionLabel(context.l10n.exportFormatLabel),
           const SizedBox(height: 10),
           _FormatToggle(
             selected: _format,
@@ -112,7 +113,9 @@ class _ExportScreenState extends State<ExportScreen> {
                           ? Icons.picture_as_pdf_rounded
                           : Icons.table_chart_rounded,
                     ),
-              label: Text(_loading ? 'Preparing…' : 'Export & Share'),
+              label: Text(_loading
+                  ? context.l10n.exportPreparing
+                  : context.l10n.exportShare),
             ),
           ),
         ],
@@ -176,12 +179,13 @@ class _ExportScreenState extends State<ExportScreen> {
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Select Plot', style: AppTypography.headingSmall),
+            child: Text(context.l10n.measSelectPlot,
+                style: AppTypography.headingSmall),
           ),
           const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.all_inclusive_rounded),
-            title: const Text('All Plots'),
+            title: Text(context.l10n.measAllPlots),
             onTap: () => Navigator.pop(context, ''),
           ),
           ...plots.map((p) => ListTile(
@@ -205,7 +209,7 @@ class _ExportScreenState extends State<ExportScreen> {
     if (data.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No measurements match your filters')),
+        SnackBar(content: Text(context.l10n.exportNoMatch)),
       );
       return;
     }
@@ -238,7 +242,7 @@ class _ExportScreenState extends State<ExportScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
+        SnackBar(content: Text('${context.l10n.exportFailedMsg}: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -337,7 +341,7 @@ class _FormatToggle extends StatelessWidget {
           child: _FormatOption(
             icon: Icons.picture_as_pdf_rounded,
             label: 'PDF',
-            subtitle: 'Share-ready document',
+            subtitle: context.l10n.exportPdfSubtitle,
             value: 'pdf',
             selected: selected == 'pdf',
             onTap: () => onChanged('pdf'),
@@ -348,7 +352,7 @@ class _FormatToggle extends StatelessWidget {
           child: _FormatOption(
             icon: Icons.table_chart_rounded,
             label: 'Excel',
-            subtitle: 'Spreadsheet (.xlsx)',
+            subtitle: context.l10n.exportExcelSubtitle,
             value: 'excel',
             selected: selected == 'excel',
             onTap: () => onChanged('excel'),
@@ -448,8 +452,8 @@ class _PreviewBanner extends StatelessWidget {
           Expanded(
             child: Text(
               count > 0
-                  ? '$count of $total measurement${count == 1 ? '' : 's'} will be exported'
-                  : 'No measurements match the selected filters',
+                  ? context.l10n.exportPreviewCount(count, total)
+                  : context.l10n.exportNoMatchFilters,
               style: AppTypography.bodySmall.copyWith(
                 color: count > 0 ? AppColors.info : AppColors.secondary,
               ),

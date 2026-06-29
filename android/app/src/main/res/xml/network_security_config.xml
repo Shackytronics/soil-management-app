@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext (http) is blocked by default on Android 9+. Production talks to the
+  Django backend over HTTPS, so cleartext stays disabled globally. We permit it
+  ONLY for the local development hosts so a physical device can reach the dev
+  server over the LAN during testing.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Dev machine LAN IP (physical device on the same Wi-Fi). -->
+        <domain includeSubdomains="false">192.168.72.70</domain>
+        <!-- Android emulator alias for the host's localhost. -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

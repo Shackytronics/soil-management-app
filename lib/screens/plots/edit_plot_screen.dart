@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -54,7 +55,7 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      _snack('Plot name is required');
+      _snack(context.l10n.plotNameRequiredMsg);
       return;
     }
 
@@ -73,7 +74,7 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
       await context.read<PlotProvider>().updatePlot(updated);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _snack('Failed to update: $e');
+      if (mounted) _snack('${context.l10n.plotUpdateFailed}: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -87,7 +88,7 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Plot'),
+        title: Text(context.l10n.plotEdit),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -102,15 +103,15 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
           children: [
             const SizedBox(height: 8),
             _Section(
-              title: 'Plot Information',
+              title: context.l10n.plotInfoSection,
               children: [
                 TextField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Plot Name *',
-                    prefixIcon: Icon(Icons.grass_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotNameRequiredLabel,
+                    prefixIcon: const Icon(Icons.grass_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -118,9 +119,9 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
                   controller: _locationController,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Location / Village',
-                    prefixIcon: Icon(Icons.location_on_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotLocationVillage,
+                    prefixIcon: const Icon(Icons.location_on_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -129,9 +130,9 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Area (acres)',
-                    prefixIcon: Icon(Icons.straighten_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotAreaAcres,
+                    prefixIcon: const Icon(Icons.straighten_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -140,22 +141,22 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
                   textCapitalization: TextCapitalization.sentences,
                   maxLines: 2,
                   textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    prefixIcon: Icon(Icons.notes_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plotDescOptional,
+                    prefixIcon: const Icon(Icons.notes_outlined),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
             _Section(
-              title: 'Primary Crop',
+              title: context.l10n.plotPrimaryCrop,
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCrop,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.eco_outlined),
-                    labelText: 'Crop Type',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.eco_outlined),
+                    labelText: context.l10n.plotCropType,
                   ),
                   items: _crops
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -179,7 +180,9 @@ class _EditPlotScreenState extends State<EditPlotScreen> {
                             strokeWidth: 2.5, color: AppColors.white),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(_isSaving ? 'Saving...' : 'Save Changes'),
+                label: Text(_isSaving
+                    ? context.l10n.actionSaving
+                    : context.l10n.profileSaveChanges),
               ),
             ),
           ],

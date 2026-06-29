@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -31,12 +32,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your email address.');
+      setState(() => _errorMessage = context.l10n.authEnterEmail);
       return;
     }
 
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      setState(() => _errorMessage = 'Please enter a valid email address.');
+      setState(() => _errorMessage = context.l10n.authInvalidEmail);
       return;
     }
 
@@ -50,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (mounted) setState(() => _emailSent = true);
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = e.message ?? 'Something went wrong.');
+        setState(() => _errorMessage = e.message ?? context.l10n.authSomethingWrong);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -120,12 +121,12 @@ class _FormView extends StatelessWidget {
 
         const SizedBox(height: 28),
 
-        Text('Reset Password', style: AppTypography.headingLarge),
+        Text(context.l10n.authResetPassword, style: AppTypography.headingLarge),
 
         const SizedBox(height: 8),
 
         Text(
-          'Enter your account email. We will send you a link to reset your password.',
+          context.l10n.authResetIntro,
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -140,7 +141,7 @@ class _FormView extends StatelessWidget {
           onSubmitted: (_) => onSubmit(),
           autofocus: true,
           decoration: InputDecoration(
-            labelText: 'Email Address',
+            labelText: context.l10n.authEmailAddress,
             prefixIcon: const Icon(Icons.email_outlined),
             errorText: null,
           ),
@@ -190,7 +191,7 @@ class _FormView extends StatelessWidget {
                       color: AppColors.white,
                     ),
                   )
-                : const Text('Send Reset Link'),
+                : Text(context.l10n.authSendResetLink),
           ),
         ),
       ],
@@ -225,7 +226,7 @@ class _ConfirmationView extends StatelessWidget {
         const SizedBox(height: 28),
 
         Text(
-          'Check Your Email',
+          context.l10n.authCheckEmailTitle,
           style: AppTypography.headingLarge,
           textAlign: TextAlign.center,
         ),
@@ -233,7 +234,7 @@ class _ConfirmationView extends StatelessWidget {
         const SizedBox(height: 12),
 
         Text(
-          'If an account exists for that email address, we\'ve sent a password reset link. Check your inbox and follow the instructions.',
+          context.l10n.authCheckEmailBody,
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -243,7 +244,7 @@ class _ConfirmationView extends StatelessWidget {
         const SizedBox(height: 12),
 
         Text(
-          'The link expires in 1 hour. Check your spam folder if you don\'t see it.',
+          context.l10n.authCheckEmailNote,
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textHint,
           ),
@@ -257,7 +258,7 @@ class _ConfirmationView extends StatelessWidget {
           height: 56,
           child: ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Back to Login'),
+            child: Text(context.l10n.authBackToLogin),
           ),
         ),
       ],

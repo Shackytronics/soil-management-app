@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/local/hive_service.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/backend_status_provider.dart';
+import 'providers/language_provider.dart';
 import 'providers/measurement_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/plot_provider.dart';
+import 'providers/recommendation_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/sync_status_provider.dart';
 import 'screens/splash/splash_screen.dart';
@@ -22,7 +28,18 @@ Future<void> main() async {
   final syncStatus = SyncStatusProvider();
   await syncStatus.init();
 
-  runApp(SoilManagementApp(settings: settings, syncStatus: syncStatus));
+  final language = LanguageProvider()..init();
+
+  // Probe the Django backend on startup (fire-and-forget).
+  final backendStatus = BackendStatusProvider();
+  unawaited(backendStatus.check());
+
+  runApp(SoilManagementApp(
+    settings: settings,
+    syncStatus: syncStatus,
+    language: language,
+    backendStatus: backendStatus,
+  ));
 }
 
 class SoilManagementApp extends StatefulWidget {
@@ -30,10 +47,14 @@ class SoilManagementApp extends StatefulWidget {
     super.key,
     required this.settings,
     required this.syncStatus,
+    required this.language,
+    required this.backendStatus,
   });
 
   final SettingsProvider settings;
   final SyncStatusProvider syncStatus;
+  final LanguageProvider language;
+  final BackendStatusProvider backendStatus;
 
   @override
   State<SoilManagementApp> createState() => _SoilManagementAppState();
@@ -57,6 +78,7 @@ class _SoilManagementAppState extends State<SoilManagementApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       widget.syncStatus.triggerSync();
+      unawaited(widget.backendStatus.check());
     }
   }
 
@@ -66,25 +88,38 @@ class _SoilManagementAppState extends State<SoilManagementApp>
       providers: [
         ChangeNotifierProvider.value(value: widget.settings),
         ChangeNotifierProvider.value(value: widget.syncStatus),
+        ChangeNotifierProvider.value(value: widget.language),
+        ChangeNotifierProvider.value(value: widget.backendStatus),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(
           create: (ctx) => PlotProvider(
             ctx.read<SyncStatusProvider>(),
           ),
         ),
+        // RecommendationProvider must be created before MeasurementProvider,
+        // which reads it to trigger advisory generation after a save.
         ChangeNotifierProvider(
-          create: (ctx) => MeasurementProvider(
+          create: (ctx) => RecommendationProvider(
             ctx.read<SyncStatusProvider>(),
           ),
         ),
+        ChangeNotifierProvider(
+          create: (ctx) => MeasurementProvider(
+            ctx.read<SyncStatusProvider>(),
+            ctx.read<RecommendationProvider>(),
+          ),
+        ),
       ],
-      child: Consumer<SettingsProvider>(
-        builder: (_, settings, _) => MaterialApp(
+      child: Consumer2<SettingsProvider, LanguageProvider>(
+        builder: (_, settings, language, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'AI Soil Management',
+          title: 'Soil Management',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: settings.themeMode,
+          locale: language.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: const SplashScreen(),
         ),
       ),

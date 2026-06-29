@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -45,24 +46,25 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = context.l10n;
     if (_selectedPlot == null) {
-      _snack('Please select a plot');
+      _snack(l10n.measSelectPlotMsg);
       return;
     }
 
     double? parse(TextEditingController c, String field) {
       final v = double.tryParse(c.text.trim());
-      if (v == null) _snack('$field must be a valid number');
+      if (v == null) _snack(l10n.measValidNumberField(field));
       return v;
     }
 
-    final n = parse(_n, 'Nitrogen');
-    final p = parse(_p, 'Phosphorus');
-    final k = parse(_k, 'Potassium');
-    final ph = parse(_ph, 'pH');
-    final moisture = parse(_moisture, 'Moisture');
-    final temp = parse(_temp, 'Temperature');
-    final ec = parse(_ec, 'EC');
+    final n = parse(_n, l10n.measNitrogen);
+    final p = parse(_p, l10n.measPhosphorus);
+    final k = parse(_k, l10n.measPotassium);
+    final ph = parse(_ph, l10n.measPh);
+    final moisture = parse(_moisture, l10n.measMoisture);
+    final temp = parse(_temp, l10n.measTemperature);
+    final ec = parse(_ec, l10n.measEc);
 
     if ([n, p, k, ph, moisture, temp, ec].any((v) => v == null)) return;
 
@@ -84,7 +86,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
 
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _snack('Failed to save: $e');
+      if (mounted) _snack('${context.l10n.measSaveFailed}: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -100,7 +102,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Add Measurement'),
+        title: Text(context.l10n.measAdd),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -117,20 +119,20 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
 
             // Plot selector
             _Section(
-              title: 'Plot',
+              title: context.l10n.measFieldPlot,
               children: [
                 if (plots.isEmpty)
                   Text(
-                    'No plots available. Add a plot first.',
+                    context.l10n.measNoPlotsAvailable,
                     style: AppTypography.bodyMedium
                         .copyWith(color: AppColors.textSecondary),
                   )
                 else
                   DropdownButtonFormField<PlotModel>(
                     initialValue: _selectedPlot,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.grass_outlined),
-                      labelText: 'Select Plot *',
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.grass_outlined),
+                      labelText: context.l10n.measSelectPlotRequired,
                     ),
                     items: plots
                         .map((p) => DropdownMenuItem(
@@ -147,11 +149,11 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
 
             // Sensor readings
             _Section(
-              title: 'Soil Nutrient Readings',
+              title: context.l10n.measNutrientReadings,
               children: [
                 _ReadingField(
                   controller: _n,
-                  label: 'Nitrogen (N)',
+                  label: context.l10n.measNitrogen,
                   unit: 'mg/kg',
                   hint: '10 – 30',
                   color: AppColors.nitrogenColor,
@@ -160,7 +162,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                 const SizedBox(height: 12),
                 _ReadingField(
                   controller: _p,
-                  label: 'Phosphorus (P)',
+                  label: context.l10n.measPhosphorus,
                   unit: 'mg/kg',
                   hint: '5 – 30',
                   color: AppColors.phosphorusColor,
@@ -169,7 +171,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                 const SizedBox(height: 12),
                 _ReadingField(
                   controller: _k,
-                  label: 'Potassium (K)',
+                  label: context.l10n.measPotassium,
                   unit: 'mg/kg',
                   hint: '100 – 300',
                   color: AppColors.potassiumColor,
@@ -181,11 +183,11 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
             const SizedBox(height: 20),
 
             _Section(
-              title: 'Soil Condition Readings',
+              title: context.l10n.measConditionReadings,
               children: [
                 _ReadingField(
                   controller: _ph,
-                  label: 'pH Level',
+                  label: context.l10n.measPh,
                   unit: '',
                   hint: '6.0 – 7.5',
                   color: AppColors.phColor,
@@ -194,7 +196,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                 const SizedBox(height: 12),
                 _ReadingField(
                   controller: _moisture,
-                  label: 'Moisture',
+                  label: context.l10n.measMoisture,
                   unit: '%',
                   hint: '40 – 70',
                   color: AppColors.moistureColor,
@@ -203,7 +205,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                 const SizedBox(height: 12),
                 _ReadingField(
                   controller: _temp,
-                  label: 'Temperature',
+                  label: context.l10n.measTemperature,
                   unit: '°C',
                   hint: '15 – 35',
                   color: AppColors.temperatureColor,
@@ -212,7 +214,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                 const SizedBox(height: 12),
                 _ReadingField(
                   controller: _ec,
-                  label: 'Electrical Conductivity (EC)',
+                  label: context.l10n.measEcWithAbbr,
                   unit: 'mS/cm',
                   hint: '0.2 – 1.0',
                   color: AppColors.conductivityColor,
@@ -224,15 +226,15 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
             const SizedBox(height: 20),
 
             _Section(
-              title: 'Notes (optional)',
+              title: context.l10n.measNotesOptional,
               children: [
                 TextField(
                   controller: _notes,
                   maxLines: 3,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    hintText: 'Observations, weather conditions, etc.',
-                    prefixIcon: Icon(Icons.notes_outlined),
+                  decoration: InputDecoration(
+                    hintText: context.l10n.measNotesHint,
+                    prefixIcon: const Icon(Icons.notes_outlined),
                     border: InputBorder.none,
                   ),
                 ),
@@ -254,7 +256,8 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                             strokeWidth: 2.5, color: AppColors.white),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(_isSaving ? 'Saving...' : 'Save Measurement'),
+                label: Text(
+                    _isSaving ? context.l10n.actionSaving : context.l10n.measSave),
               ),
             ),
 
@@ -273,7 +276,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Connect your ESP32 sensor via Bluetooth for automatic readings.',
+                      context.l10n.measSensorTip,
                       style: AppTypography.bodySmall
                           .copyWith(color: AppColors.info),
                     ),
@@ -326,7 +329,8 @@ class _ReadingField extends StatelessWidget {
             textInputAction: TextInputAction.next,
             decoration: InputDecoration(
               labelText: label,
-              hintText: 'Typical: $hint${unit.isNotEmpty ? ' $unit' : ''}',
+              hintText: context.l10n.measTypicalHint(
+                  '$hint${unit.isNotEmpty ? ' $unit' : ''}'),
               suffixText: unit.isNotEmpty ? unit : null,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14, vertical: 12),

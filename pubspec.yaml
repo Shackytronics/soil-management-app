@@ -12,6 +12,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
+  # Internationalization (English + Kiswahili)
+  intl: any
+
   cupertino_icons: ^1.0.8
 
   # State Management
@@ -28,6 +34,9 @@ dependencies:
 
   # Connectivity
   connectivity_plus: ^6.0.0
+
+  # Networking (Django REST API)
+  http: ^1.2.0
 
   # Charts
   fl_chart: ^0.69.0
@@ -52,6 +61,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/images/

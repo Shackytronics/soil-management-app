@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -18,7 +19,7 @@ class MeasurementsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Measurements'),
+        title: Text(context.l10n.measTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         flexibleSpace: Container(
@@ -43,9 +44,10 @@ class MeasurementsScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         icon: const Icon(Icons.add_chart_rounded),
-        label: const Text(
-          'Add Reading',
-          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        label: Text(
+          context.l10n.measAddReading,
+          style: const TextStyle(
+              fontFamily: 'Poppins', fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -78,7 +80,7 @@ class _SearchFilterBar extends StatelessWidget {
         onChanged: context.read<MeasurementProvider>().setSearchQuery,
         style: AppTypography.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Search by plot name or notes...',
+          hintText: context.l10n.measSearchHint,
           prefixIcon: const Icon(Icons.search, size: 20),
           filled: true,
           fillColor: AppColors.white,
@@ -111,26 +113,26 @@ class _FilterSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Filters', style: AppTypography.headingSmall),
+              Text(context.l10n.measFilters, style: AppTypography.headingSmall),
               const Spacer(),
               TextButton(
                 onPressed: () {
                   measProv.clearFilters();
                   Navigator.pop(context);
                 },
-                child: const Text('Clear All'),
+                child: Text(context.l10n.measClearAll),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text('Filter by Plot', style: AppTypography.overline),
+          Text(context.l10n.measFilterByPlot, style: AppTypography.overline),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
               FilterChip(
-                label: const Text('All Plots'),
+                label: Text(context.l10n.measAllPlots),
                 selected: measProv.filterPlotId == null,
                 onSelected: (_) => measProv.setFilterPlot(null),
               ),
@@ -142,7 +144,7 @@ class _FilterSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Text('Filter by Date Range', style: AppTypography.overline),
+          Text(context.l10n.measFilterByDate, style: AppTypography.overline),
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
@@ -150,7 +152,7 @@ class _FilterSheet extends StatelessWidget {
               icon: const Icon(Icons.date_range_outlined),
               label: Text(
                 measProv.filterDateRange == null
-                    ? 'Select Date Range'
+                    ? context.l10n.histSelectDateRange
                     : '${_fmtDate(measProv.filterDateRange!.start)} – ${_fmtDate(measProv.filterDateRange!.end)}',
               ),
               onPressed: () async {
@@ -166,14 +168,14 @@ class _FilterSheet extends StatelessWidget {
           if (measProv.filterDateRange != null)
             TextButton(
               onPressed: () => measProv.setFilterDateRange(null),
-              child: const Text('Clear date filter'),
+              child: Text(context.l10n.measClearDateFilter),
             ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Apply Filters'),
+              child: Text(context.l10n.measApplyFilters),
             ),
           ),
         ],
@@ -207,13 +209,13 @@ class _MeasurementBody extends StatelessWidget {
           children: [
             const Icon(Icons.filter_list_off, size: 56, color: AppColors.textHint),
             const SizedBox(height: 16),
-            Text('No results match your filters',
+            Text(context.l10n.histNoResults,
                 style: AppTypography.bodyMedium
                     .copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 12),
             TextButton(
               onPressed: prov.clearFilters,
-              child: const Text('Clear Filters'),
+              child: Text(context.l10n.measClearFilters),
             ),
           ],
         ),
@@ -252,7 +254,7 @@ class _ActiveFiltersBar extends StatelessWidget {
         children: [
           const Icon(Icons.filter_alt, size: 16, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text('Filters active',
+          Text(context.l10n.measFiltersActive,
               style: AppTypography.caption
                   .copyWith(color: AppColors.primary)),
           const Spacer(),
@@ -290,16 +292,18 @@ class _StatsRow extends StatelessWidget {
         children: [
           Expanded(
             child: _MiniStat(
-                '$count', 'Total', Icons.science_rounded),
+                '$count', context.l10n.measStatTotal, Icons.science_rounded),
           ),
           Expanded(
             child: _MiniStat(
-                avgPh.toStringAsFixed(1), 'Avg pH', Icons.water_drop_outlined),
+                avgPh.toStringAsFixed(1),
+                context.l10n.measStatAvgPh,
+                Icons.water_drop_outlined),
           ),
           Expanded(
             child: _MiniStat(
                 '${avgMoisture.toStringAsFixed(0)}%',
-                'Avg H₂O',
+                context.l10n.measStatAvgMoisture,
                 Icons.opacity_outlined),
           ),
         ],
@@ -492,10 +496,11 @@ class _EmptyState extends StatelessWidget {
                   size: 52, color: AppColors.primary),
             ),
             const SizedBox(height: 24),
-            Text('No Measurements Yet', style: AppTypography.headingMedium),
+            Text(context.l10n.measEmptyTitle,
+                style: AppTypography.headingMedium),
             const SizedBox(height: 8),
             Text(
-              'Add your first soil reading to start tracking nutrient levels.',
+              context.l10n.measEmptyBody,
               style: AppTypography.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
@@ -508,7 +513,7 @@ class _EmptyState extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (_) => const AddMeasurementScreen())),
                 icon: const Icon(Icons.add_chart_rounded),
-                label: const Text('Add First Reading'),
+                label: Text(context.l10n.measAddFirstReading),
               ),
             ),
           ],

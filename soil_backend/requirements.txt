@@ -1,0 +1,7 @@
+# Soil Management Backend — Python 3.12, Django 5.x
+Django>=5.0,<6.0
+djangorestframework>=3.15,<4.0
+firebase-admin>=6.5
+django-cors-headers>=4.3
+python-dotenv>=1.0
+gunicorn>=22.0

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/l10n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_typography.dart';
@@ -12,10 +13,11 @@ class ExportSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Export Settings'),
+        title: Text(l10n.settingsExportSettings),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -30,7 +32,7 @@ class ExportSettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           // ── Default format ─────────────────────────────────────────────────
-          Text('DEFAULT FORMAT', style: AppTypography.overline),
+          Text(l10n.exportDefaultFormat, style: AppTypography.overline),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -38,7 +40,7 @@ class ExportSettingsScreen extends StatelessWidget {
                 child: _FormatChip(
                   icon: Icons.picture_as_pdf_rounded,
                   label: 'PDF',
-                  subtitle: 'Printable document',
+                  subtitle: l10n.exportPdfPrintable,
                   selected: settings.defaultExportFormat == 'pdf',
                   onTap: () => settings.setDefaultExportFormat('pdf'),
                 ),
@@ -48,7 +50,7 @@ class ExportSettingsScreen extends StatelessWidget {
                 child: _FormatChip(
                   icon: Icons.table_chart_rounded,
                   label: 'Excel',
-                  subtitle: 'Spreadsheet (.xlsx)',
+                  subtitle: l10n.exportExcelSubtitle,
                   selected: settings.defaultExportFormat == 'excel',
                   onTap: () => settings.setDefaultExportFormat('excel'),
                 ),
@@ -58,7 +60,7 @@ class ExportSettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Content options ────────────────────────────────────────────────
-          Text('CONTENT', style: AppTypography.overline),
+          Text(l10n.exportContent, style: AppTypography.overline),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -77,9 +79,10 @@ class ExportSettingsScreen extends StatelessWidget {
                 child: const Icon(Icons.notes_rounded,
                     color: AppColors.primary, size: 20),
               ),
-              title: Text('Include Notes', style: AppTypography.labelMedium),
+              title: Text(l10n.exportIncludeNotesTitle,
+                  style: AppTypography.labelMedium),
               subtitle: Text(
-                'Append measurement notes to exported reports',
+                l10n.exportIncludeNotesDesc,
                 style: AppTypography.bodySmall,
               ),
               trailing: Switch(

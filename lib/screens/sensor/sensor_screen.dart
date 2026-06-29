@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -14,10 +15,13 @@ class SensorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isConnect = mode == SensorMode.connect;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isConnect ? 'Connect Sensor' : 'Live Measurement'),
+        title: Text(isConnect
+            ? l10n.sensorConnectTitle
+            : l10n.sensorMeasureTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -47,15 +51,13 @@ class SensorScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               Text(
-                isConnect ? 'BLE Sensor Pairing' : 'Live Soil Reading',
+                isConnect ? l10n.sensorPairingTitle : l10n.sensorLiveTitle,
                 style: AppTypography.headingMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                isConnect
-                    ? 'Bluetooth Low Energy module will be implemented in a future phase. Your ESP32 sensor will appear here.'
-                    : 'Live measurement stream from the 7-in-1 soil sensor will be available once BLE is implemented.',
+                isConnect ? l10n.sensorConnectBody : l10n.sensorLiveBody,
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -65,7 +67,7 @@ class SensorScreen extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back_rounded),
-                label: const Text('Go Back'),
+                label: Text(l10n.sensorGoBack),
               ),
             ],
           ),

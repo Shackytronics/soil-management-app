@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/l10n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_typography.dart';
@@ -9,9 +10,10 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About'),
+        title: Text(l10n.aboutTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -43,10 +45,9 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                Text('AI Soil Management',
-                    style: AppTypography.headingMedium),
+                Text(l10n.appName, style: AppTypography.headingMedium),
                 const SizedBox(height: 4),
-                Text('Version 1.0.0 — Phase 8.5',
+                Text(l10n.settingsVersion('1.0.0'),
                     style: AppTypography.bodySmall),
                 const SizedBox(height: 2),
                 Text('com.shackytronics.soilmanagementapp',
@@ -58,40 +59,41 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // Developer info
-          Text('DEVELOPER', style: AppTypography.overline),
+          Text(l10n.aboutDeveloperSection, style: AppTypography.overline),
           const SizedBox(height: 10),
           _InfoCard(children: [
             _InfoRow(icon: Icons.developer_mode_rounded,
-                label: 'Developer', value: 'Shackytronics'),
+                label: l10n.aboutDeveloperLabel, value: 'Shackytronics'),
             const Divider(height: 1),
             _InfoRow(icon: Icons.person_rounded,
-                label: 'Engineer', value: 'Meshaki Mpenda'),
+                label: l10n.aboutEngineer, value: 'Meshaki Mpenda'),
             const Divider(height: 1),
             _InfoRow(icon: Icons.location_on_rounded,
-                label: 'Target Market', value: 'Tanzania, East Africa'),
+                label: l10n.aboutTargetMarket,
+                value: l10n.aboutTargetMarketValue),
           ]),
           const SizedBox(height: 20),
 
           // Technical info
-          Text('TECHNOLOGY', style: AppTypography.overline),
+          Text(l10n.aboutTechnology, style: AppTypography.overline),
           const SizedBox(height: 10),
           _InfoCard(children: [
             _InfoRow(icon: Icons.phone_android_rounded,
-                label: 'Framework', value: 'Flutter 3.x (Dart)'),
+                label: l10n.aboutFramework, value: 'Flutter 3.x (Dart)'),
             const Divider(height: 1),
             _InfoRow(icon: Icons.cloud_rounded,
-                label: 'Cloud', value: 'Firebase Auth + Firestore'),
+                label: l10n.aboutCloud, value: 'Firebase Auth + Firestore'),
             const Divider(height: 1),
             _InfoRow(icon: Icons.storage_rounded,
-                label: 'Local Storage', value: 'Hive (offline-first)'),
+                label: l10n.aboutLocalStorage, value: 'Hive (offline-first)'),
             const Divider(height: 1),
             _InfoRow(icon: Icons.sensors_rounded,
-                label: 'Sensor', value: 'ESP32 + 7-in-1 (Phase 9)'),
+                label: l10n.aboutSensorLabel, value: 'ESP32 + 7-in-1 (Phase 9)'),
           ]),
           const SizedBox(height: 20),
 
           // Legal
-          Text('LEGAL', style: AppTypography.overline),
+          Text(l10n.aboutLegal, style: AppTypography.overline),
           const SizedBox(height: 10),
           _InfoCard(children: [
             ListTile(
@@ -105,15 +107,15 @@ class AboutScreen extends StatelessWidget {
                 child: const Icon(Icons.description_rounded,
                     color: AppColors.primary, size: 20),
               ),
-              title: Text('Open Source Licenses',
+              title: Text(l10n.aboutLicenses,
                   style: AppTypography.labelMedium),
               subtitle:
-                  Text('Third-party packages', style: AppTypography.bodySmall),
+                  Text(l10n.aboutThirdParty, style: AppTypography.bodySmall),
               trailing:
                   const Icon(Icons.chevron_right, color: AppColors.textHint),
               onTap: () => showLicensePage(
                 context: context,
-                applicationName: 'AI Soil Management',
+                applicationName: l10n.appName,
                 applicationVersion: '1.0.0',
                 applicationLegalese: '© 2026 Shackytronics',
               ),
@@ -123,7 +125,7 @@ class AboutScreen extends StatelessWidget {
 
           Center(
             child: Text(
-              '© 2026 Shackytronics. All rights reserved.',
+              l10n.aboutCopyright,
               style: AppTypography.caption
                   .copyWith(color: AppColors.textHint),
               textAlign: TextAlign.center,

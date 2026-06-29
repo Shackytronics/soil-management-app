@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -49,22 +50,23 @@ class _EditMeasurementScreenState extends State<EditMeasurementScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = context.l10n;
     double? parse(TextEditingController c, String field) {
       final v = double.tryParse(c.text.trim());
       if (v == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$field must be a valid number')));
+            SnackBar(content: Text(l10n.measValidNumberField(field))));
       }
       return v;
     }
 
-    final n = parse(_n, 'Nitrogen');
-    final p = parse(_p, 'Phosphorus');
-    final k = parse(_k, 'Potassium');
-    final ph = parse(_ph, 'pH');
-    final moisture = parse(_moisture, 'Moisture');
-    final temp = parse(_temp, 'Temperature');
-    final ec = parse(_ec, 'EC');
+    final n = parse(_n, l10n.measNitrogen);
+    final p = parse(_p, l10n.measPhosphorus);
+    final k = parse(_k, l10n.measPotassium);
+    final ph = parse(_ph, l10n.measPh);
+    final moisture = parse(_moisture, l10n.measMoisture);
+    final temp = parse(_temp, l10n.measTemperature);
+    final ec = parse(_ec, l10n.measEc);
 
     if ([n, p, k, ph, moisture, temp, ec].any((v) => v == null)) return;
 
@@ -87,8 +89,8 @@ class _EditMeasurementScreenState extends State<EditMeasurementScreen> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed to update: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${context.l10n.measUpdateFailed}: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -100,7 +102,7 @@ class _EditMeasurementScreenState extends State<EditMeasurementScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Measurement'),
+        title: Text(context.l10n.measEdit),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -135,38 +137,38 @@ class _EditMeasurementScreenState extends State<EditMeasurementScreen> {
             ),
             const SizedBox(height: 20),
             _Section(
-              title: 'Soil Nutrients',
+              title: context.l10n.measSoilNutrients,
               children: [
-                _ReadingField(_n, 'Nitrogen (N)', 'mg/kg', AppColors.nitrogenColor),
+                _ReadingField(_n, context.l10n.measNitrogen, 'mg/kg', AppColors.nitrogenColor),
                 const SizedBox(height: 12),
-                _ReadingField(_p, 'Phosphorus (P)', 'mg/kg', AppColors.phosphorusColor),
+                _ReadingField(_p, context.l10n.measPhosphorus, 'mg/kg', AppColors.phosphorusColor),
                 const SizedBox(height: 12),
-                _ReadingField(_k, 'Potassium (K)', 'mg/kg', AppColors.potassiumColor),
+                _ReadingField(_k, context.l10n.measPotassium, 'mg/kg', AppColors.potassiumColor),
               ],
             ),
             const SizedBox(height: 20),
             _Section(
-              title: 'Soil Conditions',
+              title: context.l10n.measSoilConditions,
               children: [
-                _ReadingField(_ph, 'pH Level', '', AppColors.phColor),
+                _ReadingField(_ph, context.l10n.measPh, '', AppColors.phColor),
                 const SizedBox(height: 12),
-                _ReadingField(_moisture, 'Moisture', '%', AppColors.moistureColor),
+                _ReadingField(_moisture, context.l10n.measMoisture, '%', AppColors.moistureColor),
                 const SizedBox(height: 12),
-                _ReadingField(_temp, 'Temperature', '°C', AppColors.temperatureColor),
+                _ReadingField(_temp, context.l10n.measTemperature, '°C', AppColors.temperatureColor),
                 const SizedBox(height: 12),
-                _ReadingField(_ec, 'Electrical Conductivity', 'mS/cm', AppColors.conductivityColor),
+                _ReadingField(_ec, context.l10n.measEc, 'mS/cm', AppColors.conductivityColor),
               ],
             ),
             const SizedBox(height: 20),
             _Section(
-              title: 'Notes',
+              title: context.l10n.measNotes,
               children: [
                 TextField(
                   controller: _notes,
                   maxLines: 3,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    hintText: 'Observations, weather conditions, etc.',
+                  decoration: InputDecoration(
+                    hintText: context.l10n.measNotesHint,
                     border: InputBorder.none,
                   ),
                 ),
@@ -186,7 +188,9 @@ class _EditMeasurementScreenState extends State<EditMeasurementScreen> {
                             strokeWidth: 2.5, color: AppColors.white),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(_isSaving ? 'Saving...' : 'Save Changes'),
+                label: Text(_isSaving
+                    ? context.l10n.actionSaving
+                    : context.l10n.profileSaveChanges),
               ),
             ),
           ],

@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
+import '../../providers/language_provider.dart';
 import '../../services/auth_services.dart';
+import '../settings/sub_screens/language_settings_screen.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -13,7 +17,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    final displayName = user?.displayName ?? 'Farmer';
+    final l10n = context.l10n;
+    final displayName = user?.displayName ?? l10n.dashFarmer;
     final email = user?.email ?? '';
     final initials = displayName.isNotEmpty
         ? displayName.trim().split(' ').map((w) => w[0]).take(2).join().toUpperCase()
@@ -66,11 +71,11 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   _ProfileSection(
-                    title: 'Account',
+                    title: l10n.profileAccountInfo,
                     tiles: [
                       _ProfileTile(
                         icon: Icons.edit_outlined,
-                        title: 'Edit Profile',
+                        title: l10n.profileEdit,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const EditProfileScreen(),
@@ -79,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       _ProfileTile(
                         icon: Icons.lock_outline,
-                        title: 'Change Password',
+                        title: l10n.profileChangePassword,
                         onTap: () {},
                       ),
                     ],
@@ -88,17 +93,23 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   _ProfileSection(
-                    title: 'Preferences',
+                    title: l10n.profilePreferences,
                     tiles: [
                       _ProfileTile(
                         icon: Icons.language_outlined,
-                        title: 'Language',
-                        trailing: 'English',
-                        onTap: () {},
+                        title: l10n.settingsLanguage,
+                        trailing: context.watch<LanguageProvider>().isSwahili
+                            ? l10n.settingsLangSwahili
+                            : l10n.settingsLangEnglish,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LanguageSettingsScreen(),
+                          ),
+                        ),
                       ),
                       _ProfileTile(
                         icon: Icons.notifications_outlined,
-                        title: 'Notifications',
+                        title: l10n.settingsNotifications,
                         onTap: () {},
                       ),
                     ],
@@ -107,16 +118,16 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   _ProfileSection(
-                    title: 'Support',
+                    title: l10n.profileSupport,
                     tiles: [
                       _ProfileTile(
                         icon: Icons.help_outline,
-                        title: 'Help & FAQ',
+                        title: l10n.profileHelpFaq,
                         onTap: () {},
                       ),
                       _ProfileTile(
                         icon: Icons.info_outline,
-                        title: 'About App',
+                        title: l10n.settingsAboutApp,
                         trailing: 'v1.0.0',
                         onTap: () {},
                       ),
@@ -136,9 +147,9 @@ class ProfileScreen extends StatelessWidget {
                         side: const BorderSide(color: AppColors.danger),
                       ),
                       icon: const Icon(Icons.logout_rounded),
-                      label: const Text(
-                        'Sign Out',
-                        style: TextStyle(
+                      label: Text(
+                        l10n.authSignOut,
+                        style: const TextStyle(
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w600,
                         ),
@@ -159,18 +170,23 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+      // Use the dialog's own context to pop. The dialog is pushed on the root
+      // navigator, while `context` here belongs to the tab's nested navigator
+      // (see MainShell._TabNavigator). Popping with the wrong context closes
+      // the nested navigator instead of the dialog, so the dialog never
+      // returns and sign-out never runs.
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.authSignOut),
+        content: Text(context.l10n.authSignOutConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.actionCancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Sign Out'),
+            child: Text(context.l10n.authSignOut),
           ),
         ],
       ),

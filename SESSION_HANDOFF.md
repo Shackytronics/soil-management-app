@@ -4,9 +4,27 @@ Smart Mobile Application for Soil Nutrient Measurement and Management
 
 # Current Status
 
-Last commit: 5ff8b6a — "Phases 2–8: navigation, offline data layer, full CRUD, history, and Firestore sync"
-Session date: 2026-06-23
-All work from this session is **uncommitted** (see Git Status below).
+Session date: 2026-06-29
+Milestone commit: "feat: complete Flutter-Django integration, localization,
+backend, and production bug fixes" — the full working tree (Django REST backend,
+Flutter↔Django advisory integration, English/Kiswahili localization, and
+production bug fixes) is committed as one milestone on `main`.
+
+Since the 2026-06-23 entry below, the project added:
+* Django REST backend (DB-less) hosting the Rule-Based Soil Management Engine.
+* Flutter integration with the Django advisory API (offline-first, Hive-cached).
+* English + Kiswahili localization (ARB + generated localizations).
+* Production bug fixes: logout navigation, recommendation connectivity on
+  physical devices, Android network security config, delete-dialog navigation.
+
+Verified: Firebase Auth, Hive persistence, Firestore sync, TECNO device test,
+`flutter analyze` = 0 issues.
+
+Next: Phase 9 — ESP32 BLE Integration.
+
+---
+
+> The sections below are the historical 2026-06-23 handoff, retained for context.
 
 ## Completed
 

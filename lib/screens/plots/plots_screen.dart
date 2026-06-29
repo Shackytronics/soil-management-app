@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -18,7 +19,7 @@ class PlotsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Plots'),
+        title: Text(context.l10n.dashMyPlots),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         flexibleSpace: Container(
@@ -44,9 +45,10 @@ class PlotsScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         icon: const Icon(Icons.add_location_alt_outlined),
-        label: const Text(
-          'Add Plot',
-          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        label: Text(
+          context.l10n.actionAddPlot,
+          style: const TextStyle(
+              fontFamily: 'Poppins', fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -62,7 +64,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: context.read<PlotProvider>().setSearchQuery,
         style: AppTypography.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Search plots...',
+          hintText: context.l10n.plotsSearch,
           prefixIcon: const Icon(Icons.search, size: 20),
           filled: true,
           fillColor: AppColors.white,
@@ -159,13 +161,14 @@ class _PlotCard extends StatelessWidget {
                       children: [
                         _Badge(
                           icon: Icons.straighten_outlined,
-                          label: '${plot.sizeAcres} ac',
+                          label: context.l10n.plotSizeBadge('${plot.sizeAcres}'),
                           color: AppColors.primaryGlass20,
                         ),
                         const SizedBox(width: 6),
                         _Badge(
                           icon: Icons.science_outlined,
-                          label: '$measurementCount readings',
+                          label:
+                              context.l10n.plotMeasurementsCount(measurementCount),
                           color: AppColors.primaryGlass10,
                         ),
                       ],
@@ -235,14 +238,16 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              hasSearch ? 'No plots found' : 'No Plots Yet',
+              hasSearch
+                  ? context.l10n.plotsNotFound
+                  : context.l10n.plotsEmptyTitle,
               style: AppTypography.headingMedium,
             ),
             const SizedBox(height: 8),
             Text(
               hasSearch
-                  ? 'Try a different search term.'
-                  : 'Add your first plot to begin tracking soil health.',
+                  ? context.l10n.plotsTryDifferent
+                  : context.l10n.plotsEmptyBody,
               style: AppTypography.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
@@ -256,7 +261,7 @@ class _EmptyState extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (_) => const AddPlotScreen())),
                   icon: const Icon(Icons.add_location_alt_outlined),
-                  label: const Text('Add First Plot'),
+                  label: Text(context.l10n.plotAddFirst),
                 ),
               ),
             ],

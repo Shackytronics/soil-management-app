@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/measurement_model.dart';
 import '../../providers/measurement_provider.dart';
 import '../../providers/plot_provider.dart';
+import '../../providers/recommendation_provider.dart';
 import '../measurements/measurement_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -26,7 +28,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('History'),
+        title: Text(context.l10n.histTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         flexibleSpace: Container(
@@ -108,7 +110,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         style: AppTypography.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Search by plot or notes...',
+          hintText: context.l10n.histSearchHint,
           prefixIcon: const Icon(Icons.search, size: 20),
           filled: true,
           fillColor: AppColors.white,
@@ -154,26 +156,27 @@ class _FilterSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Filter History', style: AppTypography.headingSmall),
+              Text(context.l10n.histFilterTitle,
+                  style: AppTypography.headingSmall),
               const Spacer(),
               TextButton(
                 onPressed: () {
                   onClear();
                   Navigator.pop(context);
                 },
-                child: const Text('Clear'),
+                child: Text(context.l10n.actionClear),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Text('Plot', style: AppTypography.overline),
+          Text(context.l10n.measFieldPlot, style: AppTypography.overline),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
               FilterChip(
-                label: const Text('All'),
+                label: Text(context.l10n.labelAll),
                 selected: selectedPlotId == null,
                 onSelected: (_) => onPlotChanged(null),
               ),
@@ -185,14 +188,14 @@ class _FilterSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text('Date Range', style: AppTypography.overline),
+          Text(context.l10n.histDateRange, style: AppTypography.overline),
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.date_range_outlined),
               label: Text(dateRange == null
-                  ? 'Select Date Range'
+                  ? context.l10n.histSelectDateRange
                   : '${_fmt(dateRange!.start)} – ${_fmt(dateRange!.end)}'),
               onPressed: () async {
                 final range = await showDateRangePicker(
@@ -207,14 +210,14 @@ class _FilterSheet extends StatelessWidget {
           if (dateRange != null)
             TextButton(
               onPressed: () => onDateRangeChanged(null),
-              child: const Text('Clear date'),
+              child: Text(context.l10n.histClearDate),
             ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Done'),
+              child: Text(context.l10n.actionDone),
             ),
           ),
         ],
@@ -276,7 +279,7 @@ class _HistoryBody extends StatelessWidget {
 
     if (filtered.isEmpty) {
       return Center(
-        child: Text('No results match your filters',
+        child: Text(context.l10n.histNoResults,
             style: AppTypography.bodyMedium
                 .copyWith(color: AppColors.textSecondary)),
       );
@@ -365,9 +368,10 @@ class _StatisticsSummary extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Row(
               children: [
-                Text('Summary', style: AppTypography.onDarkLabelLarge),
+                Text(context.l10n.histSummary,
+                    style: AppTypography.onDarkLabelLarge),
                 const Spacer(),
-                Text('$count readings',
+                Text(context.l10n.histReadingsCount(count),
                     style: AppTypography.onDarkCaption),
               ],
             ),
@@ -425,6 +429,10 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final advisoryScore = context.select<RecommendationProvider, int?>(
+      (p) => p.forMeasurement(m.id)?.soilHealthScore,
+    );
+    final hasAdvisory = advisoryScore != null;
     return Material(
       color: AppColors.surfaceCard,
       borderRadius: BorderRadius.circular(14),
@@ -480,7 +488,19 @@ class _HistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(m.plotName, style: AppTypography.labelMedium),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(m.plotName,
+                              style: AppTypography.labelMedium,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                        if (hasAdvisory) ...[
+                          const SizedBox(width: 6),
+                          _AdvisoryBadge(score: advisoryScore),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 3),
                     Text(
                       'pH ${m.ph.toStringAsFixed(1)}  ·  H₂O ${m.moisture.toStringAsFixed(0)}%  ·  N ${m.nitrogen.toStringAsFixed(0)} mg/kg',
@@ -518,6 +538,34 @@ class _HistoryTile extends StatelessWidget {
   }
 }
 
+class _AdvisoryBadge extends StatelessWidget {
+  const _AdvisoryBadge({required this.score});
+  final int score;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.primaryUltraLight,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.spa_rounded, size: 11, color: AppColors.primary),
+          const SizedBox(width: 3),
+          Text('${context.l10n.histAdviceBadge} $score',
+              style: AppTypography.caption.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              )),
+        ],
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
@@ -539,10 +587,11 @@ class _EmptyState extends StatelessWidget {
               child: const Icon(Icons.history, size: 52, color: AppColors.primary),
             ),
             const SizedBox(height: 24),
-            Text('No History Yet', style: AppTypography.headingMedium),
+            Text(context.l10n.histEmptyTitle,
+                style: AppTypography.headingMedium),
             const SizedBox(height: 8),
             Text(
-              'Your measurement history will appear here after you add readings.',
+              context.l10n.histEmptyBody,
               style: AppTypography.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_typography.dart';
@@ -33,7 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name cannot be empty')),
+        SnackBar(content: Text(context.l10n.editProfileNameEmpty)),
       );
       return;
     }
@@ -44,14 +45,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await FirebaseAuth.instance.currentUser?.updateDisplayName(name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated')),
+          SnackBar(content: Text(context.l10n.profileUpdated)),
         );
         Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update: $e')),
+          SnackBar(content: Text('${context.l10n.authSomethingWrong} $e')),
         );
       }
     } finally {
@@ -66,7 +67,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(context.l10n.profileEdit),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -102,9 +103,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _save(),
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person_outline),
+              decoration: InputDecoration(
+                labelText: context.l10n.authFullName,
+                prefixIcon: const Icon(Icons.person_outline),
               ),
             ),
 
@@ -114,7 +115,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             TextField(
               enabled: false,
               decoration: InputDecoration(
-                labelText: 'Email Address',
+                labelText: context.l10n.authEmailAddress,
                 hintText: user?.email ?? '',
                 prefixIcon: const Icon(Icons.email_outlined),
                 filled: true,
@@ -128,7 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Email cannot be changed here.',
+                context.l10n.editProfileEmailReadonly,
                 style: AppTypography.caption,
               ),
             ),
@@ -149,7 +150,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           color: AppColors.white,
                         ),
                       )
-                    : const Text('Save Changes'),
+                    : Text(context.l10n.profileSaveChanges),
               ),
             ),
           ],

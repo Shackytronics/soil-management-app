@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/l10n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_typography.dart';
@@ -14,10 +15,11 @@ class SyncSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final sync = context.watch<SyncStatusProvider>();
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sync & Data'),
+        title: Text(l10n.syncSettingsTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         iconTheme: const IconThemeData(color: AppColors.white),
@@ -35,22 +37,22 @@ class SyncSettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Sync options ───────────────────────────────────────────────────
-          Text('SYNC OPTIONS', style: AppTypography.overline),
+          Text(l10n.syncOptions, style: AppTypography.overline),
           const SizedBox(height: 12),
           _SettingsCard(
             children: [
               _SwitchTile(
                 icon: Icons.sync_rounded,
-                title: 'Auto Sync',
-                subtitle: 'Sync automatically when back online',
+                title: l10n.syncAutoSync,
+                subtitle: l10n.syncAutoSyncDesc,
                 value: settings.autoSync,
                 onChanged: settings.setAutoSync,
               ),
               const Divider(height: 1),
               _SwitchTile(
                 icon: Icons.wifi_rounded,
-                title: 'Wi-Fi Only',
-                subtitle: 'Skip sync on mobile data',
+                title: l10n.syncWifiOnly,
+                subtitle: l10n.syncWifiOnlyDesc,
                 value: settings.syncOnWifiOnly,
                 onChanged: settings.setSyncOnWifiOnly,
               ),
@@ -59,7 +61,7 @@ class SyncSettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Manual sync ────────────────────────────────────────────────────
-          Text('MANUAL SYNC', style: AppTypography.overline),
+          Text(l10n.syncManualSync, style: AppTypography.overline),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -80,8 +82,8 @@ class SyncSettingsScreen extends StatelessWidget {
                   : const Icon(Icons.cloud_upload_outlined),
               label: Text(
                 sync.syncState == SyncState.syncing
-                    ? 'Syncing…'
-                    : 'Sync Now',
+                    ? l10n.settingsSyncingEllipsis
+                    : l10n.syncNow,
               ),
             ),
           ),
@@ -89,7 +91,7 @@ class SyncSettingsScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Center(
               child: Text(
-                'Last synced: ${_formatTime(sync.lastSyncedAt!)}',
+                l10n.syncLastSynced(_formatTime(context, sync.lastSyncedAt!)),
                 style: AppTypography.caption.copyWith(color: AppColors.textHint),
               ),
             ),
@@ -106,7 +108,7 @@ class SyncSettingsScreen extends StatelessWidget {
                     color: AppColors.danger.withValues(alpha: 0.3)),
               ),
               child: Text(
-                'Last error: ${sync.lastError}',
+                l10n.syncLastError('${sync.lastError}'),
                 style: AppTypography.caption
                     .copyWith(color: AppColors.danger),
               ),
@@ -117,13 +119,13 @@ class SyncSettingsScreen extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dt) {
+  String _formatTime(BuildContext context, DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return context.l10n.syncJustNow;
+    if (diff.inHours < 1) return '${diff.inMinutes}m';
+    if (diff.inDays < 1) return '${diff.inHours}h';
+    return '${diff.inDays}d';
   }
 }
 
@@ -160,7 +162,9 @@ class _StatusCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isOnline ? 'Connected' : 'Offline',
+                  isOnline
+                      ? context.l10n.syncConnected
+                      : context.l10n.syncOffline,
                   style: AppTypography.labelLarge.copyWith(
                     color:
                         isOnline ? AppColors.success : AppColors.warning,
@@ -169,8 +173,8 @@ class _StatusCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   pending == 0
-                      ? 'All data is synced'
-                      : '$pending item${pending == 1 ? '' : 's'} pending sync',
+                      ? context.l10n.syncAllSynced
+                      : context.l10n.syncPendingItems(pending),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
